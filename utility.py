@@ -61,13 +61,11 @@ def validate(model, criterion, data_loader, device = 'cpu'):
 
 def train(model, 
           epochs, 
-          learning_rate, 
           criterion, 
           optimizer, 
           training_loader, 
           validation_loader, 
-          device = 'cuda',
-          save_dir = './'):
+          device = 'cuda',):
     
     model.train() 
     
@@ -99,31 +97,44 @@ def train(model,
                 running_loss = 0
     
     return model
-def save_checkpoint(path, model, lr, epochs,):
+def save_checkpoint(path, model, lr, epochs, arch):
 #     model.class_to_idx = image_datasets['train'].class_to_idx
     
     # Create model data dictionary
-    checkpoint = {
-              'output_size': 102,
-              'arch': 'vgg19',
-              'learning_rate': lr,
-              'classifier' : model.classifier,
-              'epochs': epochs,
-              'state_dict': model.state_dict(),
-#               'class_to_idx': model.class_to_idx
-            }
+    if model.fc:
+        checkpoint = {
+                'output_size': 102,
+                'arch': arch,
+                'learning_rate': lr,
+                'classifier' : model.fc,
+                'epochs': epochs,
+                'state_dict': model.state_dict(),
+                }
+
+    elif model.classifier:
+        checkpoint = {
+                'output_size': 102,
+                'arch': arch,
+                'learning_rate': lr,
+                'classifier' : model.classifier,
+                'epochs': epochs,
+                'state_dict': model.state_dict(),
+                }
 
     # Save to a file
     torch.save(checkpoint, os.path.join(path,'checkpoint.pth'))
     
 def load_checkpoint(path, map_location):
+
     checkpoint = torch.load(path, map_location=map_location)
-    learning_rate = checkpoint['learning_rate']
     model = getattr(torchvision.models, checkpoint['arch'])(pretrained=True)
-    model.classifier = checkpoint['classifier']
+    model.learning_rate = checkpoint['learning_rate']
+    if model.fc:
+        model.fc = checkpoint['classifier']
+    elif model.classifier:
+        model.classifier = checkpoint['classifier']
     model.epochs = checkpoint['epochs']
     model.load_state_dict(checkpoint['state_dict'])
-#     model.class_to_idx = checkpoint['class_to_idx']
         
     return model
 
