@@ -101,7 +101,7 @@ def save_checkpoint(path, model, lr, epochs, arch):
 #     model.class_to_idx = image_datasets['train'].class_to_idx
     
     # Create model data dictionary
-    if model.fc:
+    if arch in ['inception_v3', 'resnext101_32x8d', 'resnet101', 'resnet152']:
         checkpoint = {
                 'output_size': 102,
                 'arch': arch,
@@ -111,7 +111,7 @@ def save_checkpoint(path, model, lr, epochs, arch):
                 'state_dict': model.state_dict(),
                 }
 
-    elif model.classifier:
+    elif arch in ['mobilenet_v3_large', 'vgg19', 'squeezenet', 'alexnet', 'resnet101']:
         checkpoint = {
                 'output_size': 102,
                 'arch': arch,
@@ -127,11 +127,12 @@ def save_checkpoint(path, model, lr, epochs, arch):
 def load_checkpoint(path, map_location):
 
     checkpoint = torch.load(path, map_location=map_location)
-    model = getattr(torchvision.models, checkpoint['arch'])(pretrained=True)
+    arch = checkpoint['arch']
+    model = getattr(torchvision.models, arch)(pretrained=True)
     model.learning_rate = checkpoint['learning_rate']
-    if model.fc:
+    if arch in ['inception_v3', 'resnext101_32x8d', 'resnet101', 'resnet152']:
         model.fc = checkpoint['classifier']
-    elif model.classifier:
+    elif arch in ['mobilenet_v3_large', 'vgg19', 'squeezenet', 'alexnet', 'resnet101']:
         model.classifier = checkpoint['classifier']
     model.epochs = checkpoint['epochs']
     model.load_state_dict(checkpoint['state_dict'])
