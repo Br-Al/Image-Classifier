@@ -14,7 +14,7 @@ class Model():
         h1 = int(hidden_unit/2)
         h2 = hidden_unit - h1
         
-        if self.arch in ['inception_v3', 'resnext101_32x8d', 'resnet101', 'resnet152']:
+        if self.arch in ['resnet101', 'resnet152']:
             classifier = nn.Sequential(OrderedDict([
                   ('fc1', nn.Linear(self.model.fc.in_features, h1)),
                   ('drop', nn.Dropout(p=0.5)),
@@ -27,7 +27,7 @@ class Model():
                   ]))
 
             self.model.fc = classifier
-        elif self.arch in ['mobilenet_v3_large', 'vgg19', 'squeezenet', 'alexnet', 'resnet101']:
+        elif self.arch == 'vgg19':
             classifier = nn.Sequential(OrderedDict([
                   ('fc1', nn.Linear(self.model.classifier[0].in_features, h1)),
                   ('drop', nn.Dropout(p=0.5)),
